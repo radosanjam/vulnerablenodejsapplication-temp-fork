@@ -1,0 +1,677 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-77ee3111-6225-4806-9240-e9ba59d133dc",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nA \"Command Injection Vulnerability Detected\" in JavaScript typically occurs when an application constructs a command string using untrusted input and executes it using functions like `exec`. This can allow an attacker to execute arbitrary commands on the server, potentially leading to unauthorized access, data breaches, or system compromise.\n\nIn the provided code snippet, the `exec` function is used to execute a command stored in the `cmd` variable. If `cmd` includes untrusted input, an attacker could manipulate it to execute malicious commands.\n\n### General Mitigation Advice\n\n1. **Avoid Using `exec`**: If possible, avoid using `exec` to execute shell commands. Consider using safer alternatives that do not involve shell execution.\n   \n2. **Input Validation and Sanitization**: Validate and sanitize all inputs to ensure they conform to expected formats and do not contain malicious content.\n\n3. **Use Parameterized APIs**: Use APIs that allow parameterized inputs, which can help prevent injection attacks.\n\n4. **Least Privilege**: Run your application with the least privileges necessary to limit the impact of a potential compromise.\n\n5. **Environment Hardening**: Ensure the server environment is hardened and regularly updated to mitigate the impact of any potential vulnerabilities.\n\n### Source Code Fix Recommendation\n\nTo mitigate the command injection vulnerability in the provided code, avoid using `exec` with untrusted input. If executing shell commands is necessary, use a library that provides parameterized command execution, such as `child_process.spawn` or `child_process.execFile`, which do not invoke a shell by default.\n\n```javascript\nconst { execFile } = require('child_process');\n\nexecFile('yourCommand', ['arg1', 'arg2'], (error, stdout, stderr) => {\n    if (error) {\n        console.error(`execFile error: ${error}`);\n        return;\n    }\n    callback(stdout);\n});\n```\n\n### Library Dependencies\n\nThe code example requires the following Node.js standard library:\n\n- `child_process`: This module provides the ability to spawn child processes, which is necessary for executing system commands.\n\n### OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.detect-child-process"
+                ]
+              }
+            },
+            {
+              "id": "glog-608c525d-04a0-4967-8de2-5c81e23ee55e",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Code Injection Vulnerability in GitHub Actions Using Untrusted `github` Context Data\" refers to a security flaw where untrusted data from the `github` context is used to construct shell commands. This can lead to code injection if the data is not properly sanitized, allowing an attacker to execute arbitrary commands within the GitHub Actions environment. In the provided code snippet, the `TOOL_CMD` variable is constructed using inputs from the `github` context without proper validation or sanitization, making it susceptible to injection attacks.\n\n### General Mitigation Advice\n\n1. **Input Validation and Sanitization**: Always validate and sanitize inputs from untrusted sources. Use whitelisting to allow only expected values.\n2. **Use Safe APIs**: Prefer using APIs or libraries that handle input safely, avoiding direct shell command construction.\n3. **Environment Isolation**: Run potentially dangerous commands in isolated environments where possible, such as containers with limited permissions.\n4. **Least Privilege Principle**: Ensure that the GitHub Actions workflow has the minimum permissions necessary to perform its tasks.\n\n### Source Code Fix Recommendation\n\nTo mitigate the vulnerability, avoid constructing shell commands directly with untrusted input. Instead, use parameterized commands or a safer method to handle inputs. Here's a revised version of the code:\n\n```yaml\nrun: |\n  TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n  ARGS=()\n  if [ ! -z \"${{ inputs.lang }}\" ]; then\n    ARGS+=(\"--lang\" \"${{ inputs.lang }}\")\n  fi\n  if [ ! -z \"${{ inputs.ignore }}\" ]; then\n    ARGS+=(\"--ignore\" \"${{ inputs.ignore }}\")\n  fi\n  if [ ! -z \"${{ inputs.client }}\" ]; then\n    ARGS+=(\"--client\" \"${{ inputs.client }}\")\n  fi\n  \"$TOOL_CMD\" \"${ARGS[@]}\"\n```\n\n### Library Dependencies\n\nThe code example provided is a shell script executed within a GitHub Actions workflow and does not require additional JavaScript library dependencies to execute. However, ensure that the `glog.sh` script and any tools it depends on are available in the environment.\n\n### OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
+              },
+              "properties": {
+                "tags": [
+                  "yaml.github-actions.security.run-shell-injection.run-shell-injection"
+                ]
+              }
+            },
+            {
+              "id": "glog-e5d954e9-5533-4652-9220-9aee6ba13e65",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Code Injection Vulnerability in GitHub Actions Using Untrusted `github` Context Data\" refers to a security flaw where untrusted data from the `github` context is used in a way that could allow an attacker to execute arbitrary code. In the provided example, the `github.actor` is used directly in a shell command without proper sanitization, which could lead to command injection if an attacker is able to manipulate this value.\n\n### Mitigation Advice\n\nTo mitigate this vulnerability, ensure that any data from the `github` context is properly sanitized before being used in shell commands. Avoid using untrusted data directly in shell commands. Instead, use parameterized inputs or escape the data properly.\n\n### Source Code Fix Recommendation\n\nTo fix the specific vulnerability in the provided code snippet, you can use the following approach:\n\n```yaml\nrun: |\n  echo \"${{ inputs.github-token }}\" | docker login ghcr.io -u \"${{ github.actor }}\" --password-stdin\n```\n\nIn this fix, the `${{ github.actor }}` is enclosed in double quotes to prevent command injection. Additionally, consider using a more secure method to handle sensitive data and avoid exposing it in logs.\n\n### Library Dependencies\n\nThe code example provided is a part of a GitHub Actions workflow and does not require any additional JavaScript library dependencies to execute. It relies on the GitHub Actions environment and Docker.\n\n### OWASP Resources\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [OWASP Secure Coding Practices](https://owasp.org/www-project-secure-coding-practices-quick-reference-guide/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-77: Improper Neutralization of Special Elements used in a Command ('Command Injection')](https://cwe.mitre.org/data/definitions/77.html)"
+              },
+              "properties": {
+                "tags": [
+                  "yaml.github-actions.security.run-shell-injection.run-shell-injection"
+                ]
+              }
+            },
+            {
+              "id": "glog-b7ab841b-b9c9-4be7-8635-a6e3901742d4",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability from User-Controlled HTML Data\" in JavaScript occurs when an application includes user-supplied data in web pages without proper validation or escaping. This can allow attackers to inject malicious scripts into web pages viewed by other users, leading to unauthorized actions, data theft, or session hijacking.\n\n### General Mitigation Advice\n\n1. **Input Validation**: Always validate and sanitize user inputs. Use libraries or frameworks that automatically handle input validation.\n2. **Output Encoding**: Encode data before rendering it in the browser. Use context-appropriate encoding (e.g., HTML, JavaScript, URL).\n3. **Content Security Policy (CSP)**: Implement CSP headers to restrict the sources from which scripts can be loaded.\n4. **Use Security Libraries**: Utilize libraries that provide built-in protection against XSS.\n5. **Regular Security Audits**: Conduct regular security audits and code reviews to identify and fix vulnerabilities.\n\n### Source Code Fix Recommendation\n\nFor the specific vulnerability sink in the code example:\n\n```javascript\nlet cmd = this.phpPath + ' ' + realFileName + ' ' + arg1 + ' ' + arg2;\n```\n\n**Recommendation**: Avoid constructing command strings using user inputs directly. Instead, use parameterized queries or command execution libraries that handle input sanitization.\n\n```javascript\nconst { execFile } = require('child_process');\n\n// Example of using execFile to safely execute a command\nexecFile(this.phpPath, [realFileName, arg1, arg2], (error, stdout, stderr) => {\n  if (error) {\n    console.error(`exec error: ${error}`);\n    return;\n  }\n  console.log(`stdout: ${stdout}`);\n  console.error(`stderr: ${stderr}`);\n});\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following Node.js standard library is required:\n\n- `child_process`: This is a built-in Node.js module, so no additional installation is necessary.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Content Security Policy (CSP) Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-196fb547-fb5d-4d42-8777-a5c39fe07bf7",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe vulnerability arises when user-controlled data is directly inserted into the DOM using jQuery's `.html(...)` method. This can lead to Cross-Site Scripting (XSS) attacks if the data is not properly sanitized or escaped. XSS allows attackers to inject malicious scripts into web pages viewed by other users, potentially leading to data theft, session hijacking, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Sanitize Input**: Always sanitize user input on the server side before processing it on the client side.\n2. **Escape Output**: Use libraries or functions to escape HTML entities before inserting user data into the DOM.\n3. **Content Security Policy (CSP)**: Implement a strong CSP to mitigate the impact of XSS attacks.\n4. **Use Safe Methods**: Prefer using `.text(...)` instead of `.html(...)` when inserting user data, as it automatically escapes HTML.\n\n### Source Code Fix Recommendation\n\nInstead of using `.html(...)`, use `.text(...)` to ensure that any HTML tags in `tableContent` are escaped:\n\n```javascript\n$('.userList table tbody').text(tableContent);\n```\n\nIf you need to insert HTML content and ensure it's safe, consider using a library like DOMPurify to sanitize the HTML:\n\n```javascript\n// Assuming DOMPurify is included in your project\nvar cleanContent = DOMPurify.sanitize(tableContent);\n$('.userList table tbody').html(cleanContent);\n```\n\n### Library Dependencies\n\nTo execute the code example properly, the following libraries are required:\n\n- jQuery\n- DOMPurify (if using the sanitization approach)\n\n### OWASP Resources\n\n- [OWASP Cross Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.jquery-insecure-method"
+                ]
+              }
+            },
+            {
+              "id": "glog-376b0774-7ff2-4afa-8754-38a2f9163aad",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability in jQuery's html Function\" refers to a security flaw where an attacker can inject malicious scripts into a web page by exploiting the `html()` function in jQuery. This function is used to set or get the HTML content of an element, and if user input is directly passed to it without proper sanitization, it can lead to Cross-Site Scripting (XSS) attacks. In the provided code example, the `html()` function is used to insert `tableContent` into the DOM, which could be exploited if `tableContent` contains untrusted data.\n\n### Mitigation Advice\n\n1. **Input Validation and Sanitization**: Always validate and sanitize user inputs before processing them. Use libraries like DOMPurify to clean HTML content.\n2. **Use Text Methods**: If you don't need to render HTML, use the `text()` method instead of `html()` to prevent HTML content from being interpreted.\n3. **Content Security Policy (CSP)**: Implement a strong CSP to mitigate the impact of XSS by restricting the sources from which scripts can be executed.\n4. **Escape Output**: Ensure that any data being output to the page is properly escaped to prevent script execution.\n\n### Source Code Fix Recommendation\n\nTo mitigate the XSS vulnerability in the given code, you can use a library like DOMPurify to sanitize the `tableContent` before inserting it into the DOM:\n\n```javascript\n// Assuming DOMPurify is included in your project\nvar cleanTableContent = DOMPurify.sanitize(tableContent);\n$('.userList table tbody').html(cleanTableContent);\n```\n\n### Library Dependencies\n\nTo execute the code example with the recommended fix, the following libraries are required:\n\n- jQuery\n- DOMPurify\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.prohibit-jquery-html"
+                ]
+              }
+            },
+            {
+              "id": "glog-ca587fb8-8f76-41d4-a07c-c7a57ac61548",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe use of `alert()` in production code is considered a vulnerability in JavaScript applications. This is because `alert()` can be used as a vector for Cross-Site Scripting (XSS) attacks, where an attacker injects malicious scripts into web pages viewed by other users. The `alert()` function can be exploited to execute arbitrary JavaScript code, potentially leading to data theft, session hijacking, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `alert()`:** Refrain from using `alert()` for error handling or debugging in production environments. Instead, use more secure and user-friendly methods for displaying messages, such as modal dialogs or logging errors to the console.\n\n2. **Input Validation and Sanitization:** Ensure that all user inputs are properly validated and sanitized to prevent the injection of malicious scripts.\n\n3. **Content Security Policy (CSP):** Implement a strong Content Security Policy to restrict the execution of untrusted scripts.\n\n4. **Use Secure Libraries:** Utilize libraries and frameworks that provide built-in protection against XSS attacks.\n\n### Source Code Fix Recommendation\n\nReplace the `alert()` function with a more secure method of displaying error messages. For example, use a modal dialog or update the DOM to show the error message in a designated area of the page.\n\n```javascript\n// Original vulnerable code\nalert('Error: ' + response.msg);\n\n// Recommended secure code\nfunction showError(message) {\n    const errorContainer = document.getElementById('error-container');\n    if (errorContainer) {\n        errorContainer.textContent = 'Error: ' + message;\n        errorContainer.style.display = 'block';\n    }\n}\n\n// Example usage\nshowError(response.msg);\n```\n\n### Library Dependencies\n\nThe code example provided does not require any external library dependencies to execute properly. It uses standard JavaScript and DOM manipulation.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Content Security Policy (CSP) Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.javascript-alert"
+                ]
+              }
+            },
+            {
+              "id": "glog-9ef1e896-9f83-4b28-bab3-83ab2b5b7742",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Insecure Function Usage\" vulnerability in JavaScript arises when functions that can potentially lead to security risks are used without proper validation or sanitization. In the given example, the `confirm` function is used to prompt the user for confirmation before performing a critical action, such as deleting a user. This can be problematic if the confirmation dialog is bypassed or manipulated, leading to unintended actions.\n\n### Mitigation Advice\n\nTo mitigate the risks associated with insecure function usage, consider the following general advice:\n\n1. **User Input Validation**: Always validate and sanitize user inputs to prevent injection attacks.\n2. **Use Secure Libraries**: Utilize libraries that provide secure alternatives to native functions.\n3. **Implement Additional Confirmation**: Use additional confirmation mechanisms, such as requiring a password or two-factor authentication, for critical actions.\n4. **Logging and Monitoring**: Implement logging and monitoring to detect and respond to suspicious activities.\n\n### Source Code Fix Recommendation\n\nTo address the specific vulnerability sink in the example, consider implementing a more secure confirmation mechanism:\n\n```javascript\nfunction secureDeleteUser() {\n    // Implement additional confirmation logic\n    const userConfirmed = confirm('Are you sure you want to delete this user?');\n    if (userConfirmed) {\n        // Additional security checks can be added here\n        // Proceed with user deletion\n        console.log('User deleted.');\n    } else {\n        console.log('User deletion canceled.');\n    }\n}\n\n// Example usage\nsecureDeleteUser();\n```\n\n### Library Dependencies\n\nThe provided code example does not require any external library dependencies to execute properly.\n\n### OWASP Resources\n\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-676: Use of Potentially Dangerous Function](https://cwe.mitre.org/data/definitions/676.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.javascript-confirm"
+                ]
+              }
+            },
+            {
+              "id": "glog-4d07768f-f129-4ada-a03a-e291a92672cd",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability from User-Controlled HTML Data\" occurs when an application includes untrusted data in a web page without proper validation or escaping, allowing an attacker to execute arbitrary JavaScript in the context of the victim's browser. This can lead to session hijacking, defacement, or redirection to malicious sites.\n\n### Mitigation Advice\n\n1. **Input Validation**: Validate all user inputs on both client and server sides.\n2. **Output Encoding**: Use proper output encoding to escape data before rendering it in the browser.\n3. **Content Security Policy (CSP)**: Implement CSP to restrict the sources from which content can be loaded.\n4. **Use Security Libraries**: Utilize libraries that automatically handle escaping and encoding.\n\n### Source Code Fix Recommendation\n\nGiven the vulnerable code:\n\n```javascript\nalert('Error: ' + response.msg);\n```\n\nTo mitigate the XSS vulnerability, ensure that `response.msg` is properly sanitized and encoded before being used. Here is a fixed version using a hypothetical `escapeHtml` function:\n\n```javascript\nfunction escapeHtml(unsafe) {\n    return unsafe\n        .replace(/&/g, \"&amp;\")\n        .replace(/</g, \"&lt;\")\n        .replace(/>/g, \"&gt;\")\n        .replace(/\"/g, \"&quot;\")\n        .replace(/'/g, \"&#039;\");\n}\n\nalert('Error: ' + escapeHtml(response.msg));\n```\n\n### Library Dependencies\n\nThe above code does not require any external libraries to execute properly. It uses a custom function `escapeHtml` for HTML escaping.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-4254eab5-99a6-4b96-a9fe-9651a0188f02",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability from User-Controlled HTML Data\" occurs when an application includes untrusted data in a web page without proper validation or escaping, allowing an attacker to execute arbitrary JavaScript in the context of the victim's browser. This can lead to session hijacking, defacement, or redirection to malicious sites.\n\n### Mitigation Advice\n\n1. **Input Validation**: Validate all user inputs on both client and server sides.\n2. **Output Encoding**: Use proper output encoding to escape data before rendering it in the browser.\n3. **Content Security Policy (CSP)**: Implement CSP to restrict the sources from which content can be loaded.\n4. **Use Security Libraries**: Utilize libraries that automatically handle escaping and encoding.\n\n### Source Code Fix Recommendation\n\nGiven the vulnerable code:\n\n```javascript\nalert('Error: ' + response.msg);\n```\n\nTo mitigate the XSS vulnerability, ensure that `response.msg` is properly sanitized and encoded before being used. Here is a fixed version using a hypothetical `escapeHtml` function:\n\n```javascript\nfunction escapeHtml(unsafe) {\n    return unsafe\n        .replace(/&/g, \"&amp;\")\n        .replace(/</g, \"&lt;\")\n        .replace(/>/g, \"&gt;\")\n        .replace(/\"/g, \"&quot;\")\n        .replace(/'/g, \"&#039;\");\n}\n\nalert('Error: ' + escapeHtml(response.msg));\n```\n\n### Library Dependencies\n\nThe above code does not require any external libraries to execute properly. It uses a custom function `escapeHtml` for HTML escaping.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-b205a87d-c962-4e56-8321-ac71600e06d6",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe use of `alert()` in production code is considered a vulnerability in JavaScript applications. This is because `alert()` can be used as a vector for Cross-Site Scripting (XSS) attacks, where an attacker injects malicious scripts into web pages viewed by other users. The `alert()` function can be exploited to execute arbitrary JavaScript code, potentially leading to data theft, session hijacking, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `alert()`:** Refrain from using `alert()` for error handling or debugging in production environments. Instead, use more secure and user-friendly methods for displaying messages, such as modal dialogs or logging errors to the console.\n\n2. **Input Validation and Sanitization:** Ensure that all user inputs are properly validated and sanitized to prevent the injection of malicious scripts.\n\n3. **Content Security Policy (CSP):** Implement a strong Content Security Policy to restrict the execution of untrusted scripts.\n\n4. **Use Secure Libraries:** Utilize libraries and frameworks that provide built-in protection against XSS attacks.\n\n### Source Code Fix Recommendation\n\nReplace the `alert()` function with a more secure method of displaying error messages. For example, use a modal dialog or update the DOM to show the error message in a designated area of the page.\n\n```javascript\n// Original vulnerable code\nalert('Error: ' + response.msg);\n\n// Recommended secure code\nfunction showError(message) {\n    const errorContainer = document.getElementById('error-container');\n    if (errorContainer) {\n        errorContainer.textContent = 'Error: ' + message;\n        errorContainer.style.display = 'block';\n    }\n}\n\n// Example usage\nshowError(response.msg);\n```\n\n### Library Dependencies\n\nThe code example provided does not require any external library dependencies to execute properly. It uses standard JavaScript and DOM manipulation.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Content Security Policy (CSP) Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.javascript-alert"
+                ]
+              }
+            },
+            {
+              "id": "glog-55c8c90e-2a7d-4e4d-bb95-75975b26bf54",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability from User-Controlled HTML Data\" occurs when an application includes untrusted data in a web page without proper validation or escaping, allowing an attacker to execute arbitrary JavaScript in the context of the victim's browser. This can lead to session hijacking, defacement, or redirection to malicious sites.\n\n### Mitigation Advice\n\n1. **Input Validation**: Validate all user inputs on both client and server sides.\n2. **Output Encoding**: Use proper output encoding to escape data before rendering it in the browser.\n3. **Content Security Policy (CSP)**: Implement CSP to restrict the sources from which content can be loaded.\n4. **Use Security Libraries**: Utilize libraries that automatically handle escaping and encoding.\n\n### Source Code Fix Recommendation\n\nGiven the vulnerable code:\n\n```javascript\nalert('Error: ' + response.msg);\n```\n\nTo mitigate the XSS vulnerability, ensure that `response.msg` is properly sanitized and encoded before being used. Here is a fixed version using a hypothetical `escapeHtml` function:\n\n```javascript\nfunction escapeHtml(unsafe) {\n    return unsafe\n        .replace(/&/g, \"&amp;\")\n        .replace(/</g, \"&lt;\")\n        .replace(/>/g, \"&gt;\")\n        .replace(/\"/g, \"&quot;\")\n        .replace(/'/g, \"&#039;\");\n}\n\nalert('Error: ' + escapeHtml(response.msg));\n```\n\n### Library Dependencies\n\nThe above code does not require any external libraries to execute properly. It uses a custom function `escapeHtml` for HTML escaping.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-ce711d5e-e64f-4124-b333-b681cd4e0c6f",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"XSS Vulnerability from User-Controlled HTML Data\" occurs when an application includes untrusted data in a web page without proper validation or escaping, allowing an attacker to execute arbitrary JavaScript in the context of the victim's browser. This can lead to session hijacking, defacement, or redirection to malicious sites.\n\n### Mitigation Advice\n\n1. **Input Validation**: Validate all user inputs on both client and server sides.\n2. **Output Encoding**: Use proper output encoding to escape data before rendering it in the browser.\n3. **Content Security Policy (CSP)**: Implement CSP to restrict the sources from which content can be loaded.\n4. **Use Security Libraries**: Utilize libraries that automatically handle escaping and encoding.\n\n### Source Code Fix Recommendation\n\nGiven the vulnerable code:\n\n```javascript\nalert('Error: ' + response.msg);\n```\n\nTo mitigate the XSS vulnerability, ensure that `response.msg` is properly sanitized and encoded before being used. Here is a fixed version using a hypothetical `escapeHtml` function:\n\n```javascript\nfunction escapeHtml(unsafe) {\n    return unsafe\n        .replace(/&/g, \"&amp;\")\n        .replace(/</g, \"&lt;\")\n        .replace(/>/g, \"&gt;\")\n        .replace(/\"/g, \"&quot;\")\n        .replace(/'/g, \"&#039;\");\n}\n\nalert('Error: ' + escapeHtml(response.msg));\n```\n\n### Library Dependencies\n\nThe above code does not require any external libraries to execute properly. It uses a custom function `escapeHtml` for HTML escaping.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP XSS Prevention Cheat Sheet](https://owasp.org/www-project-cheat-sheets/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-fb79d25d-931a-4a9f-a428-205c8524788f",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe use of `alert()` in production code is considered a vulnerability in JavaScript applications. This is because `alert()` can be used as a vector for Cross-Site Scripting (XSS) attacks, where an attacker injects malicious scripts into web pages viewed by other users. The `alert()` function can be exploited to execute arbitrary JavaScript code, potentially leading to data theft, session hijacking, or other malicious activities.\n\n### General Mitigation Advice\n\n1. **Avoid Using `alert()`:** Refrain from using `alert()` for error handling or debugging in production environments. Instead, use more secure and user-friendly methods for displaying messages, such as modal dialogs or logging errors to the console.\n\n2. **Input Validation and Sanitization:** Ensure that all user inputs are properly validated and sanitized to prevent the injection of malicious scripts.\n\n3. **Content Security Policy (CSP):** Implement a strong Content Security Policy to restrict the execution of untrusted scripts.\n\n4. **Use Secure Libraries:** Utilize libraries and frameworks that provide built-in protection against XSS attacks.\n\n### Source Code Fix Recommendation\n\nReplace the `alert()` function with a more secure method of displaying error messages. For example, use a modal dialog or update the DOM to show the error message in a designated area of the page.\n\n```javascript\n// Original vulnerable code\nalert('Error: ' + response.msg);\n\n// Recommended secure code\nfunction showError(message) {\n    const errorContainer = document.getElementById('error-container');\n    if (errorContainer) {\n        errorContainer.textContent = 'Error: ' + message;\n        errorContainer.style.display = 'block';\n    }\n}\n\n// Example usage\nshowError(response.msg);\n```\n\n### Library Dependencies\n\nThe code example provided does not require any external library dependencies to execute properly. It uses standard JavaScript and DOM manipulation.\n\n### OWASP Resources\n\n- [OWASP Cross-Site Scripting (XSS) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Content Security Policy (CSP) Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.javascript-alert"
+                ]
+              }
+            },
+            {
+              "id": "glog-2f8b50ae-fa5c-485b-9fd6-2d0017ecb6a0",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe use of `alert()` in production code is considered a vulnerability in JavaScript applications. This is because `alert()` can be used by attackers to execute arbitrary code, perform phishing attacks, or disrupt user experience. It can also expose sensitive information if used to display debugging messages or error details. Additionally, `alert()` can be exploited in Cross-Site Scripting (XSS) attacks, where an attacker injects malicious scripts into web pages viewed by other users.\n\n### General Mitigation Advice\n\n1. **Avoid Using `alert()`:** Refrain from using `alert()` in production code. Instead, use more secure and user-friendly methods for displaying messages, such as modal dialogs or notification libraries.\n\n2. **Input Validation and Sanitization:** Ensure all user inputs are properly validated and sanitized to prevent XSS attacks.\n\n3. **Content Security Policy (CSP):** Implement a strong Content Security Policy to restrict the execution of unauthorized scripts.\n\n4. **Use Secure Libraries:** Utilize libraries that provide secure methods for displaying messages and handling user interactions.\n\n### Source Code Fix Recommendation\n\nInstead of using `alert()`, consider using a modal dialog or a notification library to inform users. Here's an example using a hypothetical notification library:\n\n```javascript\n// Assuming a notification library is available\nimport { showNotification } from 'notification-library';\n\nfunction notifyUser() {\n    showNotification('Please fill in all fields', {\n        type: 'warning',\n        duration: 5000\n    });\n}\n```\n\n### Library Dependencies\n\n- `notification-library`: This is a placeholder for any library you choose to use for notifications. You will need to install and import a real library, such as `react-toastify` or `noty`, depending on your project setup.\n\n### OWASP Resources\n\n- [OWASP Cross Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [OWASP Content Security Policy (CSP)](https://owasp.org/www-project-secure-headers/#content-security-policy)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.javascript-alert"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-77ee3111-6225-4806-9240-e9ba59d133dc",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Command Injection Vulnerability Detected"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "execphp.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 3,
+                  "endLine": 25,
+                  "endColumn": 5,
+                  "snippet": {
+                    "text": "\t\texec(cmd, function(error, stdout, stderr) {\n\t\t\tcallback(stdout);\n\t\t});"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-608c525d-04a0-4967-8de2-5c81e23ee55e",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Code Injection Vulnerability in GitHub Actions Using Untrusted `github` Context Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/glog-action/action.yml",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 45,
+                  "startColumn": 7,
+                  "endLine": 56,
+                  "endColumn": 19,
+                  "snippet": {
+                    "text": "      run: |\n        TOOL_CMD=\"${{ github.action_path }}/glog.sh scan --path $GITHUB_WORKSPACE\"\n        if [ ! -z \"${{ inputs.lang }}\" ]; then\n          TOOL_CMD+=\" --lang ${{ inputs.lang }}\"\n        fi\n        if [ ! -z \"${{ inputs.ignore }}\" ]; then\n          TOOL_CMD+=\" --ignore ${{ inputs.ignore }}\"\n        fi\n        if [ ! -z \"${{ inputs.client }}\" ]; then\n          TOOL_CMD+=\" --client ${{ inputs.client }}\"\n        fi\n        $TOOL_CMD"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-e5d954e9-5533-4652-9220-9aee6ba13e65",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Code Injection Vulnerability in GitHub Actions Using Untrusted `github` Context Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".github/glog-action/action.yml",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 41,
+                  "startColumn": 7,
+                  "endLine": 41,
+                  "endColumn": 108,
+                  "snippet": {
+                    "text": "      run: echo \"${{ inputs.github-token }}\" | docker login ghcr.io -u ${{ github.actor }} --password-stdin"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-b7ab841b-b9c9-4be7-8635-a6e3901742d4",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "XSS Vulnerability from User-Controlled HTML Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "execphp.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 22,
+                  "startColumn": 9,
+                  "endLine": 22,
+                  "endColumn": 78,
+                  "snippet": {
+                    "text": "        let cmd = this.phpPath + ' ' + realFileName + ' ' + arg1 + ' ' + arg2;"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-196fb547-fb5d-4d42-8777-a5c39fe07bf7",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "\"User-controlled data in jQuery's `.html(...)` can cause XSS vulnerabilities.\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 46,
+                  "startColumn": 5,
+                  "endLine": 46,
+                  "endColumn": 50,
+                  "snippet": {
+                    "text": "    $('.userList table tbody').html(tableContent);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-376b0774-7ff2-4afa-8754-38a2f9163aad",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "\"XSS Vulnerability in jQuery's html Function\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 46,
+                  "startColumn": 5,
+                  "endLine": 46,
+                  "endColumn": 50,
+                  "snippet": {
+                    "text": "    $('.userList table tbody').html(tableContent);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-ca587fb8-8f76-41d4-a07c-c7a57ac61548",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Use of alert() in production code"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 103,
+                  "startColumn": 9,
+                  "endLine": 103,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "        alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-9ef1e896-9f83-4b28-bab3-83ab2b5b7742",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Insecure Function Usage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 118,
+                  "startColumn": 22,
+                  "endLine": 118,
+                  "endColumn": 75,
+                  "snippet": {
+                    "text": "  var confirmation = confirm('Are you sure you want to delete this user?');"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-4d07768f-f129-4ada-a03a-e291a92672cd",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "XSS Vulnerability from User-Controlled HTML Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 103,
+                  "startColumn": 9,
+                  "endLine": 103,
+                  "endColumn": 41,
+                  "snippet": {
+                    "text": "        alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-4254eab5-99a6-4b96-a9fe-9651a0188f02",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "XSS Vulnerability from User-Controlled HTML Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 130,
+                  "startColumn": 9,
+                  "endLine": 130,
+                  "endColumn": 41,
+                  "snippet": {
+                    "text": "        alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-b205a87d-c962-4e56-8321-ac71600e06d6",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Use of alert() in production code"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 189,
+                  "startColumn": 7,
+                  "endLine": 189,
+                  "endColumn": 38,
+                  "snippet": {
+                    "text": "      alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-55c8c90e-2a7d-4e4d-bb95-75975b26bf54",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "XSS Vulnerability from User-Controlled HTML Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 189,
+                  "startColumn": 7,
+                  "endLine": 189,
+                  "endColumn": 38,
+                  "snippet": {
+                    "text": "      alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-ce711d5e-e64f-4124-b333-b681cd4e0c6f",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "XSS Vulnerability from User-Controlled HTML Data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 103,
+                  "startColumn": 9,
+                  "endLine": 103,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "        alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-fb79d25d-931a-4a9f-a428-205c8524788f",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Use of alert() in production code"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 275,
+                  "startColumn": 7,
+                  "endLine": 275,
+                  "endColumn": 38,
+                  "snippet": {
+                    "text": "      alert('Error: ' + response.msg);"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-2f8b50ae-fa5c-485b-9fd6-2d0017ecb6a0",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Use of alert() in production code"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "public/javascripts/global.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 109,
+                  "startColumn": 5,
+                  "endLine": 109,
+                  "endColumn": 39,
+                  "snippet": {
+                    "text": "    alert('Please fill in all fields');"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "requires login"
+          },
+          "properties": {}
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
