@@ -12,10 +12,10 @@
           "informationUri": "https://www.glog.ai",
           "rules": [
             {
-              "id": "glog-e90a63d6-d990-4049-8525-09c656581dc6",
+              "id": "glog-ea2ee4c0-5f5c-4407-9acb-c0471da7f7fd",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\nThe \"Non-literal $EXEC() calls detected, potential for command injection vulnerability\" warning refers to a security vulnerability in JavaScript where an attacker can inject arbitrary commands into the `exec()` function. This function is used to execute shell commands from a Node.js application. If the command string passed to `exec()` includes user input, an attacker can execute arbitrary commands on the system running the Node.js application.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, avoid using the `exec()` function with user input. If you must use user input in a shell command, sanitize it first to ensure it does not contain any command sequences. Alternatively, use a safer method to execute shell commands, such as `child_process.execFile()` or `child_process.spawn()`, which do not allow command injection.\n\n## Source Code Fix Recommendation\n\nHere is a safer version of the code using `child_process.execFile()`:\n\n```javascript\nconst { execFile } = require('child_process');\n\nexecFile(cmd, function(error, stdout, stderr) {\n    callback(stdout);\n});\n```\n\n## Library Dependencies\n\nThe code example requires the `child_process` module, which is built into Node.js and does not need to be installed separately.\n\n## References\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+                "markdown": "## Description\n\n\"Potential Command Injection Vulnerability from Non-Literal $EXEC() Calls Detected\" is a security vulnerability that occurs when an application passes unsafe user-supplied data (forms, cookies, HTTP headers, etc.) to a system shell. In this case, the user-supplied data can be processed by the shell as a command. This attack can lead to arbitrary command execution on the host operating system.\n\nIn JavaScript, this vulnerability can occur when using the `exec()` function from the `child_process` module. The `exec()` function spawns a shell and runs a command within that shell, passing the stdout and stderr to a callback function when the command is completed.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, avoid using `exec()` with user-supplied input. If it's necessary to run system commands, consider using `execFile()` or `spawn()` instead, as these functions do not spawn a shell by default. If user input must be included in the command, sanitize the input to ensure it does not contain any shell metacharacters or command sequences.\n\n## Source Code Fix Recommendation\n\nHere is a safer version of the code using `execFile()`:\n\n```javascript\nconst { execFile } = require('child_process');\n\nexecFile(cmd, function(error, stdout, stderr) {\n    callback(stdout);\n});\n```\n\n## Library Dependencies\n\nThe code example requires the `child_process` module, which is a core module in Node.js and does not need to be installed separately.\n\n## References\n\n- [OWASP Command Injection](https://owasp.org/www-community/attacks/Command_Injection)\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
               },
               "properties": {
                 "tags": [
@@ -24,10 +24,9 @@
               }
             },
             {
-              "id": "glog-84a49334-69dd-4e27-aa3c-77a04005d2f2",
+              "id": "glog-56b5ac7f-b239-440b-b5b8-360eefd3e010",
               "help": {
-                "text": "",
-                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the context of JavaScript, directly writing to the response object can lead to XSS vulnerabilities. This is because the response object may contain user-supplied input, which if not properly sanitized, can lead to the execution of malicious scripts. The specific sink in question is `response.send(phpResult);`.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n- Always validate and sanitize user-supplied input.\n- Use appropriate response headers to prevent XSS, such as `Content-Security-Policy`.\n- Use encoding libraries to encode user-supplied input before including it in a response.\n- Use secure coding practices and frameworks that automatically escape XSS.\n\n## Source Code Fix Recommendation\n\nInstead of directly sending the `phpResult` to the response, you should sanitize it first. Here's an example using the `escape-html` library:\n\n```javascript\nvar escape = require('escape-html');\nresponse.send(escape(phpResult));\n```\n\n## Library Dependencies\n\nThe code example requires the `escape-html` library. You can install it using npm:\n\n```\nnpm install escape-html\n```\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+                "text": ""
               },
               "properties": {
                 "tags": [
@@ -36,10 +35,22 @@
               }
             },
             {
-              "id": "glog-654d9fb4-756d-4615-b8f5-c71d5ddf5acd",
+              "id": "glog-920bf00f-13a9-4fee-8b90-c82d592c9686",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\n\"NoSQL Injection Vulnerability in findOne() Function Due to Untrusted User Input\" is a security vulnerability that occurs when an application uses untrusted user input in a NoSQL query. In this case, the `findOne()` function is used to query a MongoDB collection. If an attacker can control the `username` parameter, they can manipulate the query to return arbitrary documents from the collection, or even execute arbitrary commands on the database.\n\nThis vulnerability is a type of injection attack, specifically a NoSQL injection attack. Injection attacks occur when untrusted data is sent to an interpreter as part of a command or query. The attacker's hostile data can trick the interpreter into executing unintended commands or accessing unauthorized data.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always validate and sanitize user input before using it in a query. This can prevent an attacker from being able to manipulate the query. Additionally, you should use parameterized queries or prepared statements, which can ensure that user input is always treated as data, not as part of the query.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix using the `escape-string-regexp` package to sanitize the user input:\n\n```javascript\nvar escapeStringRegexp = require('escape-string-regexp');\n\nvar username = escapeStringRegexp(req.body.username);\nvar user = await collection.findOne({ \"username\": username });\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- A MongoDB driver, such as the `mongodb` package, to interact with the MongoDB database.\n- The `express` package, to handle HTTP requests and responses.\n- The `body-parser` package, to parse the request body.\n- The `escape-string-regexp` package, to sanitize user input.\n\n## References\n\n- [OWASP Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html)\n- [OWASP Node.js Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)\n- [CWE-943: Improper Neutralization of Special Elements in Data Query Logic](https://cwe.mitre.org/data/definitions/943.html)"
+                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the context of JavaScript, directly writing to the response object can lead to XSS vulnerabilities. This is because the response object is sent back to the client and rendered by the browser. If an attacker can control the content of the response object, they can inject malicious scripts that will be executed by the victim's browser.\n\nIn the provided code snippet, `response.send(phpResult);`, if `phpResult` contains user-controlled data, it can lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always validate and sanitize user input. This can be done using a library like OWASP's ESAPI for JavaScript. Additionally, you should use context-specific output encoding when inserting user-controlled data into HTML.\n\n## Source Code Fix Recommendation\n\nInstead of directly sending `phpResult` to the client, you should sanitize it first. Here's an example using the `xss` library:\n\n```javascript\nvar xss = require('xss');\nvar cleanResult = xss(phpResult);\nresponse.send(cleanResult);\n```\n\n## Library Dependencies\n\nThe `xss` library is required for the code example to execute properly.\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [Common Weakness Enumeration (CWE-79)](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.direct-response-write"
+                ]
+              }
+            },
+            {
+              "id": "glog-5770db7c-ef88-4359-8133-df79437e8d6f",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\n\"NoSQL Injection Vulnerability in findOne() Function Due to Untrusted User Input\" is a security vulnerability that occurs when an application uses untrusted user input in a NoSQL query. In this case, the `findOne()` function is used to query a MongoDB collection. If an attacker can control the `username` parameter, they can manipulate the query to return arbitrary documents from the collection, or even execute arbitrary JavaScript code in some cases.\n\nThis vulnerability is a type of injection attack, specifically a NoSQL injection, which is similar to SQL injection but targets NoSQL databases like MongoDB. It can lead to unauthorized access to data, data corruption, or even remote code execution.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always validate and sanitize user input before using it in a database query. You should also use parameterized queries or prepared statements, which can prevent an attacker from injecting malicious code into the query.\n\nIn addition, you should follow the principle of least privilege, meaning that each part of the application should only have the permissions it needs to function, and no more. This can limit the potential damage of an injection attack.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the code using the `escape()` function from the `validator` library to sanitize the user input:\n\n```javascript\nvar validator = require('validator');\n\nvar username = validator.escape(req.body.username);\nvar user = await collection.findOne({ \"username\": username });\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- Express.js: A web application framework for Node.js, used to handle HTTP requests and responses.\n- MongoDB: A NoSQL database, used to store and retrieve data.\n- Validator: A library of string validators and sanitizers.\n\n## References\n\n- [CWE-943: Improper Neutralization of Special Elements in Data Query Logic](https://cwe.mitre.org/data/definitions/943.html)"
               },
               "properties": {
                 "tags": [
@@ -48,10 +59,21 @@
               }
             },
             {
-              "id": "glog-e181dac7-2db5-42d4-bc68-4b91eaa55bd9",
+              "id": "glog-d9f3cad4-f894-409c-ae2a-5a5acf4cfb89",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.direct-response-write"
+                ]
+              }
+            },
+            {
+              "id": "glog-e9ec2e80-e84a-4e65-aaf3-403a3f7f7fc0",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\nA potential Cross-Site Scripting (XSS) vulnerability from user-controlled data in HTML string exists when an application includes untrusted data in a new HTML string used in a JavaScript context. This vulnerability can allow an attacker to inject malicious scripts into web pages viewed by other users, leading to a variety of attacks such as stealing user data, performing actions on behalf of the user, or exploiting the user's system.\n\nIn the provided code snippet, the variables `realFileName`, `arg1`, and `arg2` are concatenated into a command string without any form of sanitization or encoding. If these variables contain user-controlled data, this could lead to a potential XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n1. Avoid using user-controlled data in HTML strings or JavaScript contexts where possible.\n2. If user-controlled data must be used, ensure it is properly sanitized or encoded to prevent the execution of malicious scripts.\n3. Use context-specific output encoding libraries to encode user-controlled data before including it in HTML or JavaScript.\n4. Use Content Security Policy (CSP) to reduce the severity of any XSS vulnerabilities.\n\n## Source Code Fix Recommendation\n\nThe provided code snippet appears to be a command line string rather than a HTML string. If `realFileName`, `arg1`, and `arg2` are user-controlled, this could lead to command injection vulnerabilities rather than XSS. To mitigate this, use safe APIs that perform argument escaping, or manually escape arguments.\n\n```javascript\nlet cmd = `${this.phpPath} ${escape(realFileName)} ${escape(arg1)} ${escape(arg2)}`;\n```\n\nNote: The `escape` function used here is a placeholder. Replace it with a proper escaping function suitable for your context.\n\n## Library Dependencies\n\nThe provided code snippet does not appear to have any library dependencies.\n\n## References\n\n- [OWASP XSS (Cross Site Scripting) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Command Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)\n- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)"
+                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when data enters a program from an untrusted source and is used to generate dynamic HTML content. The vulnerability from User-Controlled Data in HTML String specifically refers to the situation where an attacker can control the data that is directly used to generate HTML content. This can lead to a variety of attacks, such as stealing sensitive data, session hijacking, and defacement of websites.\n\nIn the provided code snippet, the variables `realFileName`, `arg1`, and `arg2` are concatenated into a command string without any form of sanitization or encoding. If an attacker can control the value of these variables, they can inject malicious code.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should:\n\n1. **Validate Input**: Ensure that all user-supplied input is validated before it is processed. This can help to prevent malicious data from being used in a harmful way.\n\n2. **Encode Output**: Ensure that all output is properly encoded to prevent any potentially harmful characters from being interpreted as code.\n\n3. **Use Secure APIs**: Where possible, use secure APIs that automatically handle the encoding and decoding of data.\n\n4. **Least Privilege**: Only allow necessary privileges for a process to perform its task.\n\n## Source Code Fix Recommendation\n\nThe code should be fixed to sanitize the input before using it in the command. Here is a simple fix using the `escape` function:\n\n```javascript\nlet cmd = this.phpPath + ' ' + escape(realFileName) + ' ' + escape(arg1) + ' ' + escape(arg2);\n```\n\n## Library Dependencies\n\nThe provided code snippet does not appear to have any library dependencies.\n\n## References\n\n- [OWASP XSS (Cross Site Scripting) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP DOM based XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
               },
               "properties": {
                 "tags": [
@@ -60,31 +82,7 @@
               }
             },
             {
-              "id": "glog-025b05fa-6f5a-417c-b407-b27c5ca0cff1",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\n\"Direct Writing to Response Object Detected: Potential XSS Vulnerability\" is a security vulnerability in JavaScript programming language that occurs when user input is directly written to the response object without proper sanitization or encoding. This can lead to Cross-Site Scripting (XSS) attacks, where an attacker can inject malicious scripts into web pages viewed by other users. These scripts can steal sensitive information, perform actions on behalf of the user, or exploit other vulnerabilities in the user's browser.\n\nIn the provided code snippet, the error message `err` is directly written to the response object `res` without any sanitization or encoding. If `err` contains user input, this could lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always sanitize and/or encode user input before writing it to the response object. Sanitization removes or escapes any potentially harmful characters in the user input, while encoding converts the user input into a safe format that can be included in the response.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the code snippet using the `escape-html` library to encode the error message:\n\n```javascript\nvar escape = require('escape-html');\n\nres.send(\n  (err === null) ? { msg: '' } : { msg: escape(err) }\n);\n```\n\n## Library Dependencies\n\nThe fixed code snippet requires the `escape-html` library. You can install it using npm:\n\n```\nnpm install escape-html\n```\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
-              },
-              "properties": {
-                "tags": [
-                  "resources.rules.direct-response-write"
-                ]
-              }
-            },
-            {
-              "id": "glog-37a5fae5-4685-44f0-8042-e7fd10d38710",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the context of JavaScript programming, directly writing to the response object can lead to XSS vulnerabilities if user input is not properly sanitized. In the provided code snippet, the response object `res` is directly written to with a static message. However, if this message were to be replaced with user input, it could potentially lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n- Always validate and sanitize user input: This can prevent potentially harmful code from being injected into the response.\n- Use appropriate response headers: By setting the `Content-Type` and `X-Content-Type-Options` headers, you can prevent the browser from interpreting the content as something other than declared by the content type.\n- Use encoding libraries: Libraries like OWASP's ESAPI for JavaScript provide methods for encoding user-supplied input and can help prevent XSS attacks.\n\n## Source Code Fix Recommendation\n\nIn the provided code snippet, the message is static and does not pose an XSS risk. However, if the message were to be replaced with user input, it should be properly sanitized. Here is an example of how to sanitize user input using the `escape-html` library:\n\n```javascript\nconst escapeHtml = require('escape-html');\n\nlet userInput = /* get user input */;\nres.send({ msg: escapeHtml(userInput) });\n```\n\n## Library Dependencies\n\nThe provided code snippet seems to be using Express.js, a web application framework for Node.js. Therefore, the `express` package is required. If user input is to be sanitized as recommended, the `escape-html` package would also be required.\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
-              },
-              "properties": {
-                "tags": [
-                  "resources.rules.direct-response-write"
-                ]
-              }
-            },
-            {
-              "id": "glog-4a9b6385-0ebd-42a1-aaab-f6a51a56623f",
+              "id": "glog-4c054c41-81c1-42b1-b366-9f064c420b21",
               "help": {
                 "text": ""
               },
@@ -95,9 +93,10 @@
               }
             },
             {
-              "id": "glog-e4b813be-42d7-4642-805d-113d8f17627d",
+              "id": "glog-2574c50a-8e24-4146-b6af-c858464539cf",
               "help": {
-                "text": ""
+                "text": "",
+                "markdown": "## Description\n\nThe vulnerability \"Direct Writing to Response Object Detected, Potentially Exposing App to XSS Vulnerability\" refers to a situation where user-supplied data is directly written to the response object without proper sanitization or encoding. This can potentially lead to Cross-Site Scripting (XSS) attacks, where an attacker can inject malicious scripts into web pages viewed by other users. In the provided code snippet, the error message `err` is directly appended to the response object, which can be a potential source of XSS if `err` contains user-supplied data.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always sanitize and/or encode user-supplied data before writing it to the response object. This can be achieved by using output encoding libraries that are designed to prevent XSS, such as OWASP's Java Encoder for Java applications or OWASP's JavaScript Sanitizer for JavaScript applications.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the code snippet using the `escape-html` library to sanitize the error message:\n\n```javascript\nconst escapeHtml = require('escape-html');\n\nres.send((err === null) ? { msg: '' } : { msg: 'error: ' + escapeHtml(err) });\n```\n\n## Library Dependencies\n\nThe fixed code snippet requires the `escape-html` library. You can install it using npm:\n\n```bash\nnpm install escape-html\n```\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
               },
               "properties": {
                 "tags": [
@@ -106,10 +105,10 @@
               }
             },
             {
-              "id": "glog-7fe55173-14a6-46b1-adae-6caa2547d093",
+              "id": "glog-696ffd16-e717-420a-a543-76c392d97648",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\n\"Direct Writing to Response Object May Lead to XSS Vulnerability\" is a common security vulnerability in JavaScript programming language. It occurs when user-supplied data is directly written to the response object without proper sanitization or encoding. This can lead to Cross-Site Scripting (XSS) attacks, where an attacker can inject malicious scripts into web pages viewed by other users. These scripts can steal sensitive information, perform actions on behalf of the user, or exploit other vulnerabilities in the web application.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always sanitize and/or encode user-supplied data before writing it to the response object. This can be done using various methods, such as HTML encoding, JavaScript encoding, or using a safe API that automatically performs these operations.\n\n## Source Code Fix Recommendation\n\nIn the provided code example, the error message `err` is directly concatenated to a string and sent in the response object. This can lead to XSS if `err` contains malicious scripts. To fix this, you can use the `escape-html` library to encode the error message:\n\n```javascript\nvar escape = require('escape-html');\n\nres.send((err === null) ? { msg: '' } : { msg: 'error: ' + escape(err) });\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- `express`: A web application framework for Node.js.\n- `escape-html`: A library to escape HTML entities.\n\n## OWASP Resources\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the provided code snippet, the application is directly writing to the response object using `res.send()`. If the `err` variable contains untrusted data and is not properly escaped, this could lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should avoid directly writing to the response object with untrusted data. Instead, use context-specific output encoding/escaping before including the user input in the response page. In Express.js, you can use `resp.render()` for safe HTML escaping.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the provided code snippet:\n\n```javascript\nres.render('error', { msg: err === null ? '' : err });\n```\n\nIn this code, 'error' is the name of the view that will be rendered. The second argument is an object that contains the data to be passed to the view. The `err` variable is properly escaped by `resp.render()`.\n\n## Library Dependencies\n\nThe provided code snippet requires the following library dependencies:\n\n- Express.js\n\n## References\n\n- [OWASP XSS (Cross Site Scripting) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Node.js Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
               },
               "properties": {
                 "tags": [
@@ -118,10 +117,22 @@
               }
             },
             {
-              "id": "glog-6c372fc1-eb2e-4079-9c2e-e20a93422cd5",
+              "id": "glog-b5167f1f-56c3-4465-b049-242509ad3b0e",
               "help": {
                 "text": "",
-                "markdown": "## Description\n\nThe vulnerability arises when the `findOne()` function in a NoSQL database, such as MongoDB, is used with untrusted user input. This can lead to NoSQL injection attacks where an attacker can manipulate the query, potentially gaining unauthorized access to sensitive data. In the provided code, both the `username` and `password` are directly taken from user input without any sanitization or validation, making it vulnerable to such attacks.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n1. Validate and sanitize user input: Ensure that the user input matches the expected format. For example, if a username is expected to be alphanumeric, reject any input that contains special characters.\n\n2. Use parameterized queries or prepared statements: These can help ensure that user input is treated as literal values and not part of the query itself.\n\n3. Limit database permissions: Ensure that the database user used by the application has only the permissions necessary to perform its tasks. This can limit the potential damage of an injection attack.\n\n## Source Code Fix Recommendation\n\nHere is a simple fix using the `escape-string-regexp` package to sanitize the user input:\n\n```javascript\nvar escapeStringRegexp = require('escape-string-regexp');\n\nvar username = escapeStringRegexp(req.body.username);\nvar password = escapeStringRegexp(req.body.password);\n\nvar user = await collection.findOne({ username: username, password: password });\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- A NoSQL database driver, such as `mongodb` for MongoDB databases.\n- An HTTP server library, such as `express` for handling HTTP requests.\n- The `escape-string-regexp` package for sanitizing user input.\n\n## References\n\n- [CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')](https://cwe.mitre.org/data/definitions/89.html) (While this CWE is specifically for SQL Injection, the principles are similar for NoSQL Injection)\n\nPlease note that the links provided are active and accessible to anonymous users at the time of writing this report."
+                "markdown": "## Description\n\nA potential Cross-Site Scripting (XSS) vulnerability can occur when user-controlled data is directly embedded into an HTML string without proper sanitization or encoding. In the provided JavaScript code, the user's username is directly embedded into a string that is logged to the console. If the username contains malicious script, it could potentially be executed in the context of the user's session, leading to an XSS attack.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always sanitize or encode user-controlled data before embedding it into HTML strings. This can be done using built-in JavaScript functions or third-party libraries that are designed for this purpose.\n\n## Source Code Fix Recommendation\n\n```javascript\nconsole.log(\n    `Session.login success: ${encodeURIComponent(req.session.user.username)}`\n);\n```\n\nIn this fix, the `encodeURIComponent()` function is used to encode the user's username before it is embedded into the string. This function encodes special characters, including `<`, `>`, `&`, `'`, `\"`, and `/`, which are often used in XSS attacks.\n\n## Library Dependencies\n\nThe provided code example does not appear to require any specific library dependencies to execute properly.\n\n## OWASP Resources\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
+                ]
+              }
+            },
+            {
+              "id": "glog-9c8c10d4-20c1-4dc5-b400-353a26903969",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nThe vulnerability arises when the `findOne()` function in a NoSQL database, such as MongoDB, is used with untrusted user input. This can lead to NoSQL injection attacks where an attacker can manipulate the query, potentially gaining unauthorized access to sensitive data. In the provided code, both the `username` and `password` are directly taken from user input without any sanitization or validation, making it vulnerable to such attacks.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n1. Validate and sanitize user input: Ensure that the user input matches the expected format. For example, if the username is expected to be an alphanumeric string, any input that doesn't match this should be rejected.\n\n2. Use parameterized queries or prepared statements: These can help ensure that user input is treated strictly as data and not executable code.\n\n3. Limit database permissions: Ensure that the database user used by the application has only the permissions necessary to perform its tasks. This can limit the potential damage of an injection attack.\n\n## Code Fix\n\nHere's how you can fix the provided code using the `escape-string-regexp` package to sanitize the user input:\n\n```javascript\nvar escapeStringRegexp = require('escape-string-regexp');\n\nvar username = escapeStringRegexp(req.body.username);\nvar password = escapeStringRegexp(req.body.password);\n\nvar user = await collection.findOne({ username: username, password: password });\n```\n\n## Library Dependencies\n\nThe code example requires the following library dependencies:\n\n- A NoSQL database driver, such as `mongodb` for MongoDB databases.\n- An HTTP server framework, such as `express` for handling requests.\n- The `escape-string-regexp` package for sanitizing user input.\n\n## References\n\n- [CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')](https://cwe.mitre.org/data/definitions/89.html) (While this CWE is specifically for SQL injection, the principles are the same for NoSQL injection.)\n\nPlease note that the links provided are active and accessible to anonymous users at the time of writing this report."
               },
               "properties": {
                 "tags": [
@@ -130,7 +141,19 @@
               }
             },
             {
-              "id": "glog-122e83ac-a275-4f8a-8902-6d046b718707",
+              "id": "glog-ec9fed43-e62c-4077-abfe-fd16781ee918",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the provided code snippet, the application is directly writing to the response object using `res.send()`. If the `err` variable contains untrusted data and is not properly escaped, this could lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should avoid directly writing to the response object with untrusted data. Instead, use context-specific output encoding/escaping before including the user input in the response page. In Express.js, you can use `resp.render()` for safe HTML escaping.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the provided code snippet:\n\n```javascript\nres.render('error', { msg: err === null ? '' : err });\n```\n\nIn this code, 'error' is the name of the view that will be rendered. The second argument is an object that contains the data to be passed to the view. The `err` variable is properly escaped by `resp.render()`.\n\n## Library Dependencies\n\nThe provided code snippet requires the following library dependencies:\n\n- Express.js\n\n## References\n\n- [OWASP XSS (Cross Site Scripting) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [OWASP Node.js Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.direct-response-write"
+                ]
+              }
+            },
+            {
+              "id": "glog-2d844dca-afca-4ca9-b36f-429d7277be3d",
               "help": {
                 "text": ""
               },
@@ -141,49 +164,25 @@
               }
             },
             {
-              "id": "glog-bed42cd4-33e3-4cff-b092-59ffa9bea2e3",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\n\"Direct Writing to Response Object Detected: Potential XSS Vulnerability\" is a security vulnerability in JavaScript programming language that occurs when user input is directly written to the response object without proper sanitization or encoding. This can lead to Cross-Site Scripting (XSS) attacks, where an attacker can inject malicious scripts into web pages viewed by other users. These scripts can steal sensitive information, perform actions on behalf of the user, or exploit other vulnerabilities in the user's browser.\n\nIn the provided code snippet, the error message `err` is directly written to the response object `res` without any sanitization or encoding. If `err` contains user input, this could lead to an XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always sanitize and/or encode user input before writing it to the response object. Sanitization removes or escapes any potentially harmful characters in the user input, while encoding converts the user input into a safe format that can be included in the response.\n\n## Source Code Fix Recommendation\n\nHere is a fixed version of the code snippet using the `escape-html` library to encode the error message:\n\n```javascript\nvar escape = require('escape-html');\n\nres.send(\n  (err === null) ? { msg: '' } : { msg: escape(err) }\n);\n```\n\n## Library Dependencies\n\nThe fixed code snippet requires the `escape-html` library. You can install it using npm:\n\n```\nnpm install escape-html\n```\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
-              },
-              "properties": {
-                "tags": [
-                  "resources.rules.direct-response-write"
-                ]
-              }
-            },
-            {
-              "id": "glog-8c3afe0b-5210-47e0-9839-80d929a80ac3",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when data enters a program from an untrusted source and is used to generate dynamic HTML content. The potential XSS vulnerability from user-controlled data in an HTML string arises when an application includes untrusted data in a new browser content without proper validation or escaping. This allows attackers to inject malicious scripts into web pages viewed by other users, leading to a variety of attacks such as stealing user sessions, defacing websites, or redirecting the user to malicious sites.\n\nIn the provided JavaScript code, the user-controlled data `req.session.user.username` is directly included in a string that is logged to the console. If this string is used in an HTML context, it could lead to a potential XSS vulnerability.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to:\n\n1. **Validate Input**: Ensure that all user-supplied input is validated before it is processed. This can help to prevent malicious data from being injected into the application.\n\n2. **Escape Untrusted HTTP Request Data**: All user-controlled data should be HTML entity encoded before being included in HTML output to prevent XSS attacks.\n\n3. **Use Secure Libraries**: Use libraries that automatically escape user input, such as ReactJS for frontend JavaScript.\n\n## Source Code Fix\n\nThe following code snippet demonstrates how to mitigate this vulnerability by escaping the user-controlled data:\n\n```javascript\nlet username = escapeHTML(req.session.user.username);\nconsole.log(`Session.login success: ${username}`);\n```\n\nIn this code, `escapeHTML` is a function that replaces special characters with their HTML entities. This function is not built into JavaScript and must be implemented manually or imported from a library.\n\n## Library Dependencies\n\nThe provided code snippet does not explicitly require any library dependencies to execute. However, to implement the `escapeHTML` function, you might need a library such as [he](https://www.npmjs.com/package/he) for HTML entity encoding.\n\n## References\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
-              },
-              "properties": {
-                "tags": [
-                  "resources.rules.raw-html-concat"
-                ]
-              }
-            },
-            {
-              "id": "glog-51227778-d79b-4096-aadc-8e4ccc0387ac",
-              "help": {
-                "text": "",
-                "markdown": "## Description\n\nCross-Site Scripting (XSS) vulnerabilities occur when an application includes untrusted data in a new web page without proper validation or escaping, or updates an existing web page with user-supplied data using a browser API that can create HTML or JavaScript. XSS allows attackers to execute scripts in the victim's browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.\n\nIn the provided JavaScript code, the potential XSS vulnerability arises from the fact that user-controlled data (`req.session.user.username`) is directly included in a string that is logged to the console. If this string were to be rendered in a browser environment, it could lead to an XSS attack.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, you should always escape user-controlled data before including it in HTML or JavaScript code. This can be done using built-in JavaScript functions or third-party libraries designed for this purpose.\n\n## Source Code Fix Recommendation\n\n```javascript\nconsole.log(\n  `Session.login destroy: ${escape(req.session.user.username)}`\n);\n```\n\nIn this fixed code, the `escape` function is used to ensure that any special characters in the username are properly escaped. This prevents them from being interpreted as part of the HTML or JavaScript code.\n\n## Library Dependencies\n\nThe provided code does not appear to have any library dependencies. However, if the `escape` function is not available in your environment, you may need to include a library that provides this functionality, such as lodash's `_.escape` function.\n\n## OWASP Resources\n\n- [Cross-Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n- [XSS (Cross Site Scripting) Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
-              },
-              "properties": {
-                "tags": [
-                  "resources.rules.raw-html-concat"
-                ]
-              }
-            },
-            {
-              "id": "glog-a2b0e746-fa25-4a05-8eba-12199a795220",
+              "id": "glog-e096b028-37da-4394-983d-4cf7edeeaf77",
               "help": {
                 "text": ""
               },
               "properties": {
                 "tags": [
                   "resources.rules.direct-response-write"
+                ]
+              }
+            },
+            {
+              "id": "glog-6cbd7b00-71f9-49eb-92d6-f74572b20174",
+              "help": {
+                "text": "",
+                "markdown": "## Description\n\nA potential Cross-Site Scripting (XSS) vulnerability can occur when user-controlled data is directly included in an HTML string without proper sanitization or encoding. In the provided JavaScript code, the user's username is directly included in a string that is logged to the console. If the username contains malicious script, it could potentially be executed, leading to an XSS attack.\n\n## Mitigation Advice\n\nTo mitigate this vulnerability, it is recommended to always sanitize or encode user-controlled data before including it in an HTML string. This can be done using various methods, such as HTML encoding, JavaScript encoding, or using a library that automatically encodes user-controlled data.\n\n## Source Code Fix Recommendation\n\nIn the provided code, the user's username should be sanitized before it is included in the string. This can be done using a library such as `escape-html`:\n\n```javascript\nconst escapeHtml = require('escape-html');\n\nconsole.log(\n  `Session.login destroy: ${escapeHtml(req.session.user.username)}`\n);\n```\n\n## Library Dependencies\n\nThe provided code requires the `escape-html` library to sanitize the user's username.\n\n## OWASP Resources\n\n- [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)\n\n## Common Weakness Enumeration (CWE)\n\n- [CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')](https://cwe.mitre.org/data/definitions/79.html)"
+              },
+              "properties": {
+                "tags": [
+                  "resources.rules.raw-html-concat"
                 ]
               }
             }
@@ -199,11 +198,11 @@
       "language": "en-US",
       "results": [
         {
-          "ruleId": "glog-e90a63d6-d990-4049-8525-09c656581dc6",
+          "ruleId": "glog-ea2ee4c0-5f5c-4407-9acb-c0471da7f7fd",
           "kind": "fail",
           "level": "warning",
           "message": {
-            "text": "Non-literal $EXEC() calls detected, potential for command injection vulnerability."
+            "text": "Potential Command Injection Vulnerability from Non-Literal $EXEC() Calls Detected"
           },
           "locations": [
             {
@@ -230,7 +229,38 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-84a49334-69dd-4e27-aa3c-77a04005d2f2",
+          "ruleId": "glog-56b5ac7f-b239-440b-b5b8-360eefd3e010",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Invalid input."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 5,
+                  "endLine": 23,
+                  "endColumn": 44,
+                  "snippet": {
+                    "text": "    res.send({ msg: \"duplicate username\" });"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_0"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-920bf00f-13a9-4fee-8b90-c82d592c9686",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -261,7 +291,7 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-654d9fb4-756d-4615-b8f5-c71d5ddf5acd",
+          "ruleId": "glog-5770db7c-ef88-4359-8133-df79437e8d6f",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -292,131 +322,7 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-e181dac7-2db5-42d4-bc68-4b91eaa55bd9",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "\"Potential XSS Vulnerability from User-Controlled Data in HTML String\""
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "execphp.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 22,
-                  "startColumn": 9,
-                  "endLine": 22,
-                  "endColumn": 78,
-                  "snippet": {
-                    "text": "        let cmd = this.phpPath + ' ' + realFileName + ' ' + arg1 + ' ' + arg2;"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "957206d904aed971b4370ffde407a8f4389df84451cb35fee20c9d9802005350c81ac7a78bc377c2151218998b7fcff342634150078d8ddbbec3efab726396f1_0"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-025b05fa-6f5a-417c-b407-b27c5ca0cff1",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Direct Writing to Response Object Detected: Potential XSS Vulnerability"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 26,
-                  "startColumn": 7,
-                  "endLine": 28,
-                  "endColumn": 8,
-                  "snippet": {
-                    "text": "      res.send(\n        (err === null) ? { msg: '' } : { msg: err }\n      );"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_1"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-37a5fae5-4685-44f0-8042-e7fd10d38710",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Direct Writing to Response Object May Lead to XSS Vulnerability"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 23,
-                  "startColumn": 5,
-                  "endLine": 23,
-                  "endColumn": 44,
-                  "snippet": {
-                    "text": "    res.send({ msg: \"duplicate username\" });"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_0"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-4a9b6385-0ebd-42a1-aaab-f6a51a56623f",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Invalid input."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 60,
-                  "startColumn": 7,
-                  "endLine": 60,
-                  "endColumn": 40,
-                  "snippet": {
-                    "text": "      res.send({ msg: \"unauthorized\" });"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_5"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-e4b813be-42d7-4642-805d-113d8f17627d",
+          "ruleId": "glog-d9f3cad4-f894-409c-ae2a-5a5acf4cfb89",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -447,11 +353,73 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-7fe55173-14a6-46b1-adae-6caa2547d093",
+          "ruleId": "glog-e9ec2e80-e84a-4e65-aaf3-403a3f7f7fc0",
           "kind": "fail",
           "level": "warning",
           "message": {
-            "text": "Direct Writing to Response Object May Lead to XSS Vulnerability"
+            "text": "XSS Vulnerability from User-Controlled Data in HTML String"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "execphp.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 22,
+                  "startColumn": 9,
+                  "endLine": 22,
+                  "endColumn": 78,
+                  "snippet": {
+                    "text": "        let cmd = this.phpPath + ' ' + realFileName + ' ' + arg1 + ' ' + arg2;"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "957206d904aed971b4370ffde407a8f4389df84451cb35fee20c9d9802005350c81ac7a78bc377c2151218998b7fcff342634150078d8ddbbec3efab726396f1_0"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-4c054c41-81c1-42b1-b366-9f064c420b21",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Invalid input."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 60,
+                  "startColumn": 7,
+                  "endLine": 60,
+                  "endColumn": 40,
+                  "snippet": {
+                    "text": "      res.send({ msg: \"unauthorized\" });"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_5"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-2574c50a-8e24-4146-b6af-c858464539cf",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Direct Writing to Response Object Detected, Potentially Exposing App to XSS Vulnerability"
           },
           "locations": [
             {
@@ -478,7 +446,69 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-6c372fc1-eb2e-4079-9c2e-e20a93422cd5",
+          "ruleId": "glog-696ffd16-e717-420a-a543-76c392d97648",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Direct Writing to Response Object May Lead to XSS Vulnerability; Use 'resp.render()' for Safe HTML Escaping"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 26,
+                  "startColumn": 7,
+                  "endLine": 28,
+                  "endColumn": 8,
+                  "snippet": {
+                    "text": "      res.send(\n        (err === null) ? { msg: '' } : { msg: err }\n      );"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_1"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-b5167f1f-56c3-4465-b049-242509ad3b0e",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "\"Potential XSS Vulnerability from User-Controlled Data in HTML String\""
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 66,
+                  "startColumn": 11,
+                  "endLine": 68,
+                  "endColumn": 13,
+                  "snippet": {
+                    "text": "          console.log(\n            `Session.login success: ${req.session.user.username}`\n          );"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "bda9187e5c359f02741b8acb00ca3d78d7265393c25522f1d4d31c501763e74f70c20fba5b0520c7d4c281442f6ea28f08f0c13aadde5f2b7df8a427889a551f_0"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-9c8c10d4-20c1-4dc5-b400-353a26903969",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -509,7 +539,69 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-122e83ac-a275-4f8a-8902-6d046b718707",
+          "ruleId": "glog-ec9fed43-e62c-4077-abfe-fd16781ee918",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Direct Writing to Response Object May Lead to XSS Vulnerability; Use 'resp.render()' for Safe HTML Escaping"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 118,
+                  "startColumn": 7,
+                  "endLine": 120,
+                  "endColumn": 8,
+                  "snippet": {
+                    "text": "      res.send(\n        (err === null) ? { msg: '' } : { msg: err }\n      );"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_8"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-2d844dca-afca-4ca9-b36f-429d7277be3d",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "Invalid input."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "routes/users.js",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 99,
+                  "startColumn": 5,
+                  "endLine": 99,
+                  "endColumn": 47,
+                  "snippet": {
+                    "text": "    res.send({ msg: \"Something bad happens\" });"
+                  }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_6"
+          },
+          "properties": {}
+        },
+        {
+          "ruleId": "glog-e096b028-37da-4394-983d-4cf7edeeaf77",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -540,69 +632,7 @@
           "properties": {}
         },
         {
-          "ruleId": "glog-bed42cd4-33e3-4cff-b092-59ffa9bea2e3",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Direct Writing to Response Object Detected: Potential XSS Vulnerability"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 118,
-                  "startColumn": 7,
-                  "endLine": 120,
-                  "endColumn": 8,
-                  "snippet": {
-                    "text": "      res.send(\n        (err === null) ? { msg: '' } : { msg: err }\n      );"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_8"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-8c3afe0b-5210-47e0-9839-80d929a80ac3",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Potential XSS Vulnerability from User-Controlled Data in HTML String"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 66,
-                  "startColumn": 11,
-                  "endLine": 68,
-                  "endColumn": 13,
-                  "snippet": {
-                    "text": "          console.log(\n            `Session.login success: ${req.session.user.username}`\n          );"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "bda9187e5c359f02741b8acb00ca3d78d7265393c25522f1d4d31c501763e74f70c20fba5b0520c7d4c281442f6ea28f08f0c13aadde5f2b7df8a427889a551f_0"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-51227778-d79b-4096-aadc-8e4ccc0387ac",
+          "ruleId": "glog-6cbd7b00-71f9-49eb-92d6-f74572b20174",
           "kind": "fail",
           "level": "warning",
           "message": {
@@ -629,37 +659,6 @@
           ],
           "fingerprints": {
             "matchBasedId/v1": "bda9187e5c359f02741b8acb00ca3d78d7265393c25522f1d4d31c501763e74f70c20fba5b0520c7d4c281442f6ea28f08f0c13aadde5f2b7df8a427889a551f_1"
-          },
-          "properties": {}
-        },
-        {
-          "ruleId": "glog-a2b0e746-fa25-4a05-8eba-12199a795220",
-          "kind": "fail",
-          "level": "warning",
-          "message": {
-            "text": "Invalid input."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "routes/users.js",
-                  "uriBaseId": "%SRCROOT%"
-                },
-                "region": {
-                  "startLine": 99,
-                  "startColumn": 5,
-                  "endLine": 99,
-                  "endColumn": 47,
-                  "snippet": {
-                    "text": "    res.send({ msg: \"Something bad happens\" });"
-                  }
-                }
-              }
-            }
-          ],
-          "fingerprints": {
-            "matchBasedId/v1": "9d4d523d91a0c97c0163d0863362dcd6a680bfdb68c5ef50e1804dba6907357fcd34361fd6a141c079d7b38e15f02a1eefc1a508320cf4a5ac119c9db06c206e_6"
           },
           "properties": {}
         }
